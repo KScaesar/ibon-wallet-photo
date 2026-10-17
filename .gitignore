@@ -1,0 +1,90 @@
+# ==========================================
+# Operating System Files
+# ==========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ==========================================
+# Editor & IDE (VS Code, JetBrains)
+# ==========================================
+.vscode/
+*.code-workspace
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ==========================================
+# Python & Virtual Environments
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments (venv, uv, virtualenv, conda)
+.venv/
+venv/
+ENV/
+env/
+.env
+.venv*
+
+# Testing & Linting
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.tox/
+
+# ==========================================
+# Photos & Output Images (Personal / Generated)
+# ==========================================
+# 原始輸入相片
+photo[0-9].*
+photo[0-9][0-9].*
+photo*.jpg
+photo*.jpeg
+photo*.png
+
+# 產出成果與中間範例照片
+ibon_print*.jpg
+standard_4x6*.jpg
+final_wallet_print*.jpg
+choice*.jpg
+style*.jpg
+sample*.jpg
+native*.jpg
+sheet*.jpg
+ok*.jpg
+test*.jpg
+
+# 通用圖片副檔名（防止個人照片意外提交）
+*.jpg
+*.jpeg
+*.png
+*.bmp
+*.gif
