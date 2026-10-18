@@ -55,42 +55,54 @@ def process_card_auto(src: Image.Image, cell_w: int, cell_h: int) -> Image.Image
     """自動偵測照片原生比例分流處理。"""
     return make_blurred_portrait_card(src, cell_w, cell_h) if src.height > src.width else make_landscape_card(src, cell_w, cell_h)
 
+# 排版邊距設定（單位：mm，換算 300 DPI: 1 mm ≈ 11.81 px）
+OUTER_MARGIN_MM = 0.5   # 外圍邊界留白（保留 0.5mm 微邊容錯）
+INNER_MARGIN_MM = 2.0   # 中央十字單側留白（中線兩側各 2.0mm，中央十字走廊總寬 4.0mm）
+
+def mm_to_px(mm: float, dpi: int = 300) -> int:
+    """將毫米 (mm) 換算為對應 DPI 之像素。"""
+    return round(mm * dpi / 25.4)
+
 def build_wallet_sheet(photos: list[Image.Image], canvas_w: int, canvas_h: int) -> Image.Image:
     """根據指定畫布尺寸自動排版 4 張照片為 2x3 吋皮夾照。"""
-    cell_w = canvas_w // 2
-    cell_h = canvas_h // 2
+    cx = canvas_w // 2
+    cy = canvas_h // 2
     
-    pad = 18  # 約 1.5mm 純白邊距
-    pw = cell_w - pad * 2
-    ph = cell_h - pad * 2
+    outer_pad = mm_to_px(OUTER_MARGIN_MM, 300)
+    inner_pad = mm_to_px(INNER_MARGIN_MM, 300)
     
-    quadrants = [process_card_auto(photo, pw, ph) for photo in photos]
+    # 計算各象限照片區域（外緣留 outer_pad，內側留 inner_pad）
+    # 左上 (0)、右上 (1)、左下 (2)、右下 (3)
+    quadrant_boxes = [
+        # (x1, y1, x2, y2)
+        (outer_pad, outer_pad, cx - inner_pad, cy - inner_pad),
+        (cx + inner_pad, outer_pad, canvas_w - outer_pad, cy - inner_pad),
+        (outer_pad, cy + inner_pad, cx - inner_pad, canvas_h - outer_pad),
+        (cx + inner_pad, cy + inner_pad, canvas_w - outer_pad, canvas_h - outer_pad),
+    ]
     
     canvas = Image.new("RGB", (canvas_w, canvas_h), (255, 255, 255))
     draw = ImageDraw.Draw(canvas)
     
-    coords = [
-        (pad, pad),
-        (cell_w + pad, pad),
-        (pad, cell_h + pad),
-        (cell_w + pad, cell_h + pad)
-    ]
-    for i in range(4):
-        canvas.paste(quadrants[i], coords[i])
+    for i, (x1, y1, x2, y2) in enumerate(quadrant_boxes):
+        pw = x2 - x1
+        ph = y2 - y1
+        card = process_card_auto(photos[i], pw, ph)
+        canvas.paste(card, (x1, y1))
         
     # 中央十字裁切虛線
     line_col = (195, 195, 195)
     for y in range(0, canvas_h, 14):
-        draw.line([(cell_w, y), (cell_w, min(y + 7, canvas_h))], fill=line_col, width=1)
+        draw.line([(cx, y), (cx, min(y + 7, canvas_h))], fill=line_col, width=1)
     for x in range(0, canvas_w, 14):
-        draw.line([(x, cell_h), (min(x + 7, canvas_w), cell_h)], fill=line_col, width=1)
+        draw.line([(x, cy), (min(x + 7, canvas_w), cy)], fill=line_col, width=1)
         
     # 外圍對位刻度線
     tick = 14
-    draw.line([(cell_w, 0), (cell_w, tick)], fill=(120, 120, 120), width=1)
-    draw.line([(cell_w, canvas_h - tick), (cell_w, canvas_h)], fill=(120, 120, 120), width=1)
-    draw.line([(0, cell_h), (tick, cell_h)], fill=(120, 120, 120), width=1)
-    draw.line([(canvas_w - tick, cell_h), (canvas_w, cell_h)], fill=(120, 120, 120), width=1)
+    draw.line([(cx, 0), (cx, tick)], fill=(120, 120, 120), width=1)
+    draw.line([(cx, canvas_h - tick), (cx, canvas_h)], fill=(120, 120, 120), width=1)
+    draw.line([(0, cy), (tick, cy)], fill=(120, 120, 120), width=1)
+    draw.line([(canvas_w - tick, cy), (canvas_w, cy)], fill=(120, 120, 120), width=1)
     
     return canvas
 
